@@ -1,11 +1,17 @@
 import { createRouter, createWebHistory } from "vue-router";
-import UserLogin from "../views/LoginUser.vue"; // Aggiorna il nome importato
+import UserLogin from "../views/LoginUser.vue"; // Vista per il login
+import UserSignup from "../views/UserSignup.vue"; // Vista per la registrazione
 
 const routes = [
   {
     path: "/",
-    name: "UserLogin", // Usa il nome multi-word
-    component: UserLogin, // Nome aggiornato
+    name: "UserLogin", // Nome multi-word per il login
+    component: UserLogin,
+  },
+  {
+    path: "/signup",
+    name: "UserSignup", // Nome multi-word per la registrazione
+    component: UserSignup,
   },
 ];
 

@@ -10,10 +10,18 @@
       style="width: 100%; max-height: 90vh"
     >
       <v-card-title class="text-h4 text-center">
-        Accedi al tuo account
+        Crea il tuo account
       </v-card-title>
       <v-card-text>
-        <v-form ref="form" v-model="isValid" @submit.prevent="login">
+        <v-form ref="form" v-model="isValid" @submit.prevent="register">
+          <v-text-field
+            label="Nome completo"
+            v-model="fullName"
+            :rules="[rules.required]"
+            outlined
+            dense
+            clearable
+          ></v-text-field>
           <v-text-field
             label="Email"
             v-model="email"
@@ -25,7 +33,16 @@
           <v-text-field
             label="Password"
             v-model="password"
-            :rules="[rules.required]"
+            :rules="[rules.required, rules.minPasswordLength]"
+            type="password"
+            outlined
+            dense
+            clearable
+          ></v-text-field>
+          <v-text-field
+            label="Conferma Password"
+            v-model="confirmPassword"
+            :rules="[rules.required, passwordMatchRule]"
             type="password"
             outlined
             dense
@@ -39,99 +56,80 @@
             type="submit"
             class="mt-3"
           >
-            Accedi
+            Registrati
           </v-btn>
         </v-form>
       </v-card-text>
       <v-card-actions class="d-flex justify-center">
-        <v-btn text color="grey darken-1" small @click="forgotPassword">
-          Password dimenticata?
+        <v-btn text small @click="redirectToLogin">
+          Hai già un account? Accedi
         </v-btn>
-      </v-card-actions>
-      <v-card-actions class="d-flex justify-center">
-        <router-link to="/signup">
-          <v-btn text color="grey darken-1" small>
-            Non hai un account? Registrati
-          </v-btn>
-        </router-link>
       </v-card-actions>
     </v-card>
   </v-container>
 </template>
-
 <script>
-import axios from "axios"; // Assicurati di aver installato Axios
+import axios from "axios";
 
 export default {
-  name: "UserLogin", // Nome multi-word per rispettare le regole ESLint
+  name: "UserSignup",
   data() {
     return {
+      fullName: "", // Modificato da "name" a "fullName"
       email: "",
       password: "",
+      confirmPassword: "",
       isValid: false,
       rules: {
         required: (value) => !!value || "Campo obbligatorio",
         email: (value) =>
           /.+@.+\..+/.test(value) || "Inserisci un'email valida",
+        minPasswordLength: (value) =>
+          value.length >= 6 || "La password deve contenere almeno 6 caratteri",
       },
     };
   },
+  computed: {
+    passwordMatchRule() {
+      return (value) =>
+        value === this.password || "Le password non corrispondono";
+    },
+  },
   methods: {
-    async login() {
+    async register() {
       try {
-        const response = await axios.post("http://localhost:8081/auth/login", {
+        const response = await axios.post("http://localhost:8081/auth/signup", {
+          fullName: this.fullName, // Cambiato per corrispondere al backend
           email: this.email,
           password: this.password,
         });
 
-        if (response.status === 200) {
-          alert("Accesso effettuato con successo!");
+        if (response.status === 201) {
+          alert("Registrazione completata con successo!");
           console.log("Token ricevuto:", response.data.token);
+          this.redirectToLogin();
         }
       } catch (error) {
-        console.error("Errore durante il login:", error);
-        alert("Accesso fallito. Verifica email e password.");
+        console.error("Errore durante la registrazione:", error);
+        alert(
+          "Registrazione fallita. Controlla i dati inseriti o riprova più tardi."
+        );
       }
     },
-    forgotPassword() {
-      alert("Funzione non implementata.");
+    redirectToLogin() {
+      this.$router.push("/"); // Redirect alla pagina di login (homepage)
     },
   },
 };
 </script>
-
 <style scoped>
 .v-card {
-  min-height: 500px;
-  /* Altezza minima per rendere la card più grande */
+  min-height: 550px;
   max-width: 700px;
-  /* Larghezza massima */
   padding: 24px;
-  /* Spazi interni */
 }
 
 .v-card-title {
   font-size: 24px;
-  /* Testo più grande per il titolo */
-}
-
-.reset-password-btn {
-  color: #757575;
-  /* Grigio per il pulsante */
-  text-transform: none;
-}
-
-.signup-link {
-  color: #757575;
-  /* Grigio per il link */
-  text-decoration: none;
-  font-size: 0.875rem;
-  /* Dimensione testo ridotta */
-  margin-top: 5px;
-}
-
-.signup-link:hover {
-  text-decoration: underline;
-  /* Sottolineatura al passaggio del mouse */
 }
 </style>
