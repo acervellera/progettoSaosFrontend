@@ -12,7 +12,7 @@
           </v-card-title>
           <v-card-text>
             <!-- Utilizzo del componente ErrorMessage -->
-            <ErrorMessage v-model:message="errorMessage" />
+            <ErrorMessage :message="errorMessage" />
             <v-form ref="form" v-model="isValid" @submit.prevent="register">
               <v-text-field
                 label="Nome completo"
@@ -73,12 +73,12 @@
 
 <script>
 import axios from "axios";
-import ErrorMessage from "@/components/ErrorMessage.vue"; // Importa il componente
+import ErrorMessage from "@/components/ErrorMessage.vue";
 
 export default {
   name: "UserSignup",
   components: {
-    ErrorMessage, // Registra il componente
+    ErrorMessage,
   },
   data() {
     return {
@@ -87,7 +87,7 @@ export default {
       password: "",
       confirmPassword: "",
       isValid: false,
-      errorMessage: "", // Variabile per il messaggio di errore
+      errorMessage: "",
       rules: {
         required: (value) => !!value || "Campo obbligatorio",
         email: (value) =>
@@ -105,37 +105,57 @@ export default {
   },
   methods: {
     async register() {
+      console.log("Avvio della registrazione..."); // Log iniziale
+      if (!this.isValid) {
+        console.log("Validazione fallita. Campi non validi."); // Log in caso di campi non validi
+        this.errorMessage = "Compila correttamente tutti i campi.";
+        return;
+      }
+
       try {
+        console.log("Dati inviati per la registrazione:", {
+          fullName: this.fullName,
+          email: this.email,
+          password: this.password,
+        });
+
         const response = await axios.post("http://localhost:8081/auth/signup", {
           fullName: this.fullName,
           email: this.email,
           password: this.password,
         });
 
-        if (response.status === 201) {
+        console.log("Risposta dal server:", response); // Log della risposta del server
+
+        if (response.status === 201 || response.status === 200) {
           alert("Registrazione completata con successo!");
-          this.redirectToLogin();
+          console.log("Reindirizzo a /initiate-2fa con email:", this.email);
+
+          // Reindirizza alla pagina di configurazione della 2FA
+          this.$router.push({
+            path: "/initiate-2fa",
+            query: { email: this.email },
+          });
+        } else {
+          console.log("Stato non 201. Qualcosa è andato storto:", response);
         }
       } catch (error) {
-        // Cattura il messaggio del backend
-        if (error.response && error.response.data) {
-          // Se il backend restituisce una stringa semplice
-          this.errorMessage =
-            typeof error.response.data === "string"
-              ? error.response.data
-              : error.response.data.message || "Errore sconosciuto.";
-        } else {
-          this.errorMessage = "Errore di connessione. Riprovare più tardi.";
-        }
+        console.error("Errore durante la registrazione:", error);
+        this.errorMessage =
+          error.response?.data?.message || "Errore durante la registrazione.";
       }
     },
     redirectToLogin() {
-      this.$router.push("/"); // Redirect alla pagina di login
+      console.log("Reindirizzo alla pagina di login.");
+      this.$router.push("/");
     },
-  },
-
-  redirectToLogin() {
-    this.$router.push("/"); // Redirect alla pagina di login
   },
 };
 </script>
+
+<style scoped>
+.v-card {
+  max-width: 500px;
+  margin: auto;
+}
+</style>

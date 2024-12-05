@@ -1,17 +1,23 @@
 import { createRouter, createWebHistory } from "vue-router";
-import UserLogin from "../views/LoginUser.vue"; // Vista per il login
-import UserSignup from "../views/UserSignup.vue"; // Vista per la registrazione
+import UserLogin from "../views/LoginUser.vue";
+import UserSignup from "../views/UserSignup.vue";
+import Initiate2FA from "../views/Initiate2FA.vue"; // Importa la nuova vista
 
 const routes = [
   {
     path: "/",
-    name: "UserLogin", // Nome multi-word per il login
+    name: "UserLogin",
     component: UserLogin,
   },
   {
     path: "/signup",
-    name: "UserSignup", // Nome multi-word per la registrazione
+    name: "UserSignup",
     component: UserSignup,
+  },
+  {
+    path: "/initiate-2fa",
+    name: "Initiate2FA", // Nuova vista per il QR code
+    component: Initiate2FA,
   },
 ];
 
