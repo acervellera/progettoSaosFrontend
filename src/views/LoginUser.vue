@@ -129,7 +129,7 @@ export default {
 
             // Ottieni i dettagli dell'utente dal token
             const userResponse = await axios.get(
-              "http://localhost:8081/api/users/me",
+              "http://localhost:8081/api/users/profile",
               {
                 headers: {
                   Authorization: `Bearer ${jwtToken}`,
