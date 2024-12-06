@@ -4,9 +4,9 @@
     style="min-height: 100vh; background: #f5f5f5"
   >
     <v-card elevation="10" class="pa-6" style="max-width: 500px">
-      <v-card-title class="text-h4 text-center">
-        Configura la tua 2FA
-      </v-card-title>
+      <v-card-title class="text-h4 text-center"
+        >Configura la tua 2FA</v-card-title
+      >
       <v-card-text>
         <div v-if="qrCodeUrl">
           <p>
@@ -18,9 +18,9 @@
         <div v-else>
           <p>Caricamento del codice QR...</p>
         </div>
-        <v-btn color="primary" block class="mt-3" @click="redirectToLogin">
-          Torna al Login
-        </v-btn>
+        <v-btn color="primary" block class="mt-3" @click="redirectToLogin"
+          >Torna al Login</v-btn
+        >
       </v-card-text>
     </v-card>
   </v-container>
@@ -33,7 +33,7 @@ export default {
   name: "Initiate2FA",
   data() {
     return {
-      qrCodeUrl: null, // URL per visualizzare il QR Code
+      qrCodeUrl: null,
     };
   },
   mounted() {
@@ -42,24 +42,28 @@ export default {
   methods: {
     async loadQrCode() {
       try {
-        const email = this.$route.query.email;
+        const { email, temporaryToken } = this.$route.query;
 
-        if (!email) {
-          alert("Email mancante. Impossibile procedere.");
+        if (!email || !temporaryToken) {
+          alert("Accesso non autorizzato.");
           this.$router.push("/");
           return;
         }
 
         const response = await axios.post(
           "http://localhost:8081/auth/initiate-2fa",
-          { email },
+          { email, temporaryToken },
           { responseType: "blob" }
         );
 
         this.qrCodeUrl = URL.createObjectURL(response.data);
       } catch (error) {
-        console.error("Errore durante il caricamento del QR Code:", error);
-        alert("Impossibile caricare il codice QR. Riprova più tardi.");
+        if (error.response && error.response.status === 401) {
+          alert("Accesso non autorizzato.");
+        } else {
+          alert("Errore durante il caricamento del QR Code.");
+        }
+        this.$router.push("/");
       }
     },
     redirectToLogin() {
@@ -68,17 +72,3 @@ export default {
   },
 };
 </script>
-
-<style scoped>
-.v-card {
-  max-width: 500px;
-  margin: auto;
-}
-
-.qr-code {
-  width: 100%;
-  max-width: 300px;
-  margin: auto;
-  display: block;
-}
-</style>
