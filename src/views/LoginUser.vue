@@ -3,15 +3,11 @@
     class="d-flex justify-center align-center"
     style="height: 100vh; background: #f5f5f5"
   >
-    <v-card
-      elevation="10"
-      max-width="700"
-      class="pa-6"
-      style="width: 100%; max-height: 90vh"
-    >
-      <v-card-title class="text-h4 text-center">
+    <v-card elevation="10" max-width="500" class="pa-6 rounded-card">
+      <v-card-title class="text-h5 text-center font-weight-bold">
         Accedi al tuo account
       </v-card-title>
+      <v-divider class="my-3"></v-divider>
       <v-card-text>
         <v-form ref="form" v-model="isValid" @submit.prevent="handleLogin">
           <!-- Primo Step: Email e Password -->
@@ -23,6 +19,7 @@
               outlined
               dense
               clearable
+              prepend-inner-icon="mdi-email"
             ></v-text-field>
             <v-text-field
               label="Password"
@@ -32,6 +29,7 @@
               outlined
               dense
               clearable
+              prepend-inner-icon="mdi-lock"
             ></v-text-field>
           </div>
 
@@ -45,6 +43,7 @@
               dense
               clearable
               maxlength="6"
+              prepend-inner-icon="mdi-key"
             ></v-text-field>
           </div>
 
@@ -78,7 +77,7 @@
 </template>
 
 <script>
-import axios from "axios";
+import axios from "axios"; // Usa axios direttamente
 
 export default {
   name: "UserLogin",
@@ -87,7 +86,7 @@ export default {
       email: "",
       password: "",
       otpCode: "",
-      step: 1, // 1: Credenziali, 2: OTP
+      step: 1, // Step 1: Credenziali; Step 2: OTP
       isValid: false,
       rules: {
         required: (value) => !!value || "Campo obbligatorio",
@@ -173,5 +172,10 @@ export default {
 
 .v-card-title {
   font-size: 24px;
+}
+
+.rounded-card {
+  border-radius: 16px;
+  box-shadow: 0px 6px 20px rgba(0, 0, 0, 0.1);
 }
 </style>
