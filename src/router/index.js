@@ -1,7 +1,9 @@
 import { createRouter, createWebHistory } from "vue-router";
 import UserLogin from "../views/LoginUser.vue";
 import UserSignup from "../views/UserSignup.vue";
-import Initiate2FA from "../views/Initiate2FA.vue"; // Importa la nuova vista
+import Initiate2FA from "../views/Initiate2FA.vue";
+import AdminDashboard from "@/views/AdminDashboard.vue";
+import UserDashboard from "@/views/UserDashboard.vue";
 
 const routes = [
   {
@@ -18,6 +20,16 @@ const routes = [
     path: "/initiate-2fa",
     name: "Initiate2FA", // Nuova vista per il QR code
     component: Initiate2FA,
+  },
+  {
+    path: "/admin/dashboard",
+    name: "AdminDashboard",
+    component: AdminDashboard,
+  },
+  {
+    path: "/user/dashboard",
+    name: "UserDashboard",
+    component: UserDashboard,
   },
 ];
 

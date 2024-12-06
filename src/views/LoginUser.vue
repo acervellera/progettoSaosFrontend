@@ -13,24 +13,41 @@
         Accedi al tuo account
       </v-card-title>
       <v-card-text>
-        <v-form ref="form" v-model="isValid" @submit.prevent="login">
-          <v-text-field
-            label="Email"
-            v-model="email"
-            :rules="[rules.required, rules.email]"
-            outlined
-            dense
-            clearable
-          ></v-text-field>
-          <v-text-field
-            label="Password"
-            v-model="password"
-            :rules="[rules.required]"
-            type="password"
-            outlined
-            dense
-            clearable
-          ></v-text-field>
+        <v-form ref="form" v-model="isValid" @submit.prevent="handleLogin">
+          <!-- Primo Step: Email e Password -->
+          <div v-if="step === 1">
+            <v-text-field
+              label="Email"
+              v-model="email"
+              :rules="[rules.required, rules.email]"
+              outlined
+              dense
+              clearable
+            ></v-text-field>
+            <v-text-field
+              label="Password"
+              v-model="password"
+              :rules="[rules.required]"
+              type="password"
+              outlined
+              dense
+              clearable
+            ></v-text-field>
+          </div>
+
+          <!-- Secondo Step: Codice OTP -->
+          <div v-else-if="step === 2">
+            <v-text-field
+              label="Codice OTP"
+              v-model="otpCode"
+              :rules="[rules.required]"
+              outlined
+              dense
+              clearable
+              maxlength="6"
+            ></v-text-field>
+          </div>
+
           <v-btn
             :disabled="!isValid"
             color="primary"
@@ -39,10 +56,11 @@
             type="submit"
             class="mt-3"
           >
-            Accedi
+            {{ step === 1 ? "Accedi" : "Conferma OTP" }}
           </v-btn>
         </v-form>
       </v-card-text>
+
       <v-card-actions class="d-flex justify-center">
         <v-btn text color="grey darken-1" small @click="forgotPassword">
           Password dimenticata?
@@ -60,14 +78,16 @@
 </template>
 
 <script>
-import axios from "axios"; // Assicurati di aver installato Axios
+import axios from "axios";
 
 export default {
-  name: "UserLogin", // Nome multi-word per rispettare le regole ESLint
+  name: "UserLogin",
   data() {
     return {
       email: "",
       password: "",
+      otpCode: "",
+      step: 1, // 1: Credenziali, 2: OTP
       isValid: false,
       rules: {
         required: (value) => !!value || "Campo obbligatorio",
@@ -77,22 +97,66 @@ export default {
     };
   },
   methods: {
-    async login() {
+    async handleLogin() {
       try {
-        const response = await axios.post("http://localhost:8081/auth/login", {
-          email: this.email,
-          password: this.password,
-        });
+        if (this.step === 1) {
+          const response = await axios.post(
+            "http://localhost:8081/auth/login",
+            {
+              email: this.email,
+              password: this.password,
+            }
+          );
 
-        if (response.status === 200) {
-          alert("Accesso effettuato con successo!");
-          console.log("Token ricevuto:", response.data.token);
+          if (response.status === 200) {
+            alert("Inserisci il codice OTP.");
+            this.step = 2;
+          }
+        } else if (this.step === 2) {
+          const response = await axios.post(
+            `http://localhost:8081/auth/login-2fa?otpCode=${this.otpCode}`,
+            {
+              email: this.email,
+              password: this.password,
+            }
+          );
+
+          if (response.status === 200) {
+            const jwtToken = response.data.token;
+
+            // Salva il token nel localStorage
+            localStorage.setItem("jwtToken", jwtToken);
+
+            // Ottieni i dettagli dell'utente dal token
+            const userResponse = await axios.get(
+              "http://localhost:8081/api/users/me",
+              {
+                headers: {
+                  Authorization: `Bearer ${jwtToken}`,
+                },
+              }
+            );
+
+            const userRole = userResponse.data.role;
+
+            // Reindirizza in base al ruolo
+            if (userRole === "ADMIN") {
+              this.$router.push("/admin/dashboard");
+            } else {
+              this.$router.push("/user/dashboard");
+            }
+          }
         }
       } catch (error) {
         console.error("Errore durante il login:", error);
-        alert("Accesso fallito. Verifica email e password.");
+        alert(
+          this.step === 1
+            ? "Email o password errate."
+            : "Codice OTP non valido. Riprovare."
+        );
       }
     },
+
     forgotPassword() {
       alert("Funzione non implementata.");
     },
@@ -103,35 +167,11 @@ export default {
 <style scoped>
 .v-card {
   min-height: 500px;
-  /* Altezza minima per rendere la card più grande */
   max-width: 700px;
-  /* Larghezza massima */
   padding: 24px;
-  /* Spazi interni */
 }
 
 .v-card-title {
   font-size: 24px;
-  /* Testo più grande per il titolo */
-}
-
-.reset-password-btn {
-  color: #757575;
-  /* Grigio per il pulsante */
-  text-transform: none;
-}
-
-.signup-link {
-  color: #757575;
-  /* Grigio per il link */
-  text-decoration: none;
-  font-size: 0.875rem;
-  /* Dimensione testo ridotta */
-  margin-top: 5px;
-}
-
-.signup-link:hover {
-  text-decoration: underline;
-  /* Sottolineatura al passaggio del mouse */
 }
 </style>
