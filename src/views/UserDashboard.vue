@@ -10,8 +10,7 @@
           >
           <v-card-title class="font-weight-bold">Profilo</v-card-title>
           <v-card-text>
-            <p>Email: {{ userDetails.email || "email@esempio.com" }}</p>
-            <p>Ruolo: {{ userDetails.role || "Utente" }}</p>
+            <p>Email: {{ "Visita il tuo profilo!" }}</p>
           </v-card-text>
           <v-card-actions>
             <v-btn color="primary" text>Vai al profilo</v-btn>

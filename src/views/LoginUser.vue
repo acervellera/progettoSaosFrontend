@@ -9,6 +9,9 @@
       </v-card-title>
       <v-divider class="my-3"></v-divider>
       <v-card-text>
+        <!-- Messaggi di errore -->
+        <ErrorMessage :message="errorMessage" @clear-message="clearError" />
+
         <v-form ref="form" v-model="isValid" @submit.prevent="handleLogin">
           <!-- Primo Step: Email e Password -->
           <div v-if="step === 1">
@@ -77,10 +80,12 @@
 </template>
 
 <script>
-import axios from "axios"; // Usa axios direttamente
+import axios from "axios";
+import ErrorMessage from "@/components/ErrorMessage.vue";
 
 export default {
   name: "UserLogin",
+  components: { ErrorMessage },
   data() {
     return {
       email: "",
@@ -88,6 +93,7 @@ export default {
       otpCode: "",
       step: 1, // Step 1: Credenziali; Step 2: OTP
       isValid: false,
+      errorMessage: "", // Gestione dei messaggi di errore
       rules: {
         required: (value) => !!value || "Campo obbligatorio",
         email: (value) =>
@@ -108,7 +114,6 @@ export default {
           );
 
           if (response.status === 200) {
-            alert("Inserisci il codice OTP.");
             this.step = 2;
           }
         } else if (this.step === 2) {
@@ -122,11 +127,8 @@ export default {
 
           if (response.status === 200) {
             const jwtToken = response.data.token;
-
-            // Salva il token nel localStorage
             localStorage.setItem("jwtToken", jwtToken);
 
-            // Ottieni i dettagli dell'utente dal token
             const userResponse = await axios.get(
               "http://localhost:8081/api/users/profile",
               {
@@ -138,7 +140,6 @@ export default {
 
             const userRole = userResponse.data.role;
 
-            // Reindirizza in base al ruolo
             if (userRole === "ADMIN") {
               this.$router.push("/admin/dashboard");
             } else {
@@ -148,16 +149,19 @@ export default {
         }
       } catch (error) {
         console.error("Errore durante il login:", error);
-        alert(
+        this.errorMessage =
           this.step === 1
             ? "Email o password errate."
-            : "Codice OTP non valido. Riprovare."
-        );
+            : "Codice OTP non valido. Riprovare.";
       }
     },
 
     forgotPassword() {
-      alert("Funzione non implementata.");
+      this.errorMessage = "Funzione non implementata.";
+    },
+
+    clearError() {
+      this.errorMessage = ""; // Pulisce il messaggio di errore
     },
   },
 };

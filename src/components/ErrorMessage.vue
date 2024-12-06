@@ -10,7 +10,7 @@ export default {
   props: {
     message: {
       type: String,
-      required: true,
+      required: false, // Non obbligatorio, per evitare errori in caso di assenza
     },
     type: {
       type: String,
@@ -24,9 +24,8 @@ export default {
   watch: {
     message(newMessage) {
       if (newMessage) {
-        // Avvia un timer per resettare il messaggio
         setTimeout(() => {
-          this.$emit("update:message", ""); // Comunica al genitore di resettare il messaggio
+          this.$emit("clear-message"); // Evento personalizzato per resettare il messaggio
         }, this.duration);
       }
     },
